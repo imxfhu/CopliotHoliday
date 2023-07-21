@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 
 public class CSVUtils {
     public static final String CSV_SEPARATOR = ",";
@@ -76,29 +76,43 @@ public class CSVUtils {
         HolidayEntityList currentHolidayEntityList = getHolidayEntityList();
         if (currentHolidayEntityList == null || currentHolidayEntityList.getHolidayList().size() == 0) {
             logger.info("current csv file is empty, write new data into csv file");
+            currentHolidayEntityList.setUpdated(true);
             writeCSVFile(newHolidayList);
             return true;
         }
         ArrayList<HolidayEntity> cuHolidayList = currentHolidayEntityList.getHolidayList();
         ArrayList<HolidayEntity> finalHolidayList = new ArrayList<HolidayEntity>();
+        Map<String, HolidayEntity> newHolidayMap = new HashMap<>();
+        for (int j=0;j<newHolidayList.size();j++) {
+            HolidayEntity newHoliday = newHolidayList.get(j);
+            newHolidayMap.put(newHoliday.getHolidayCountry()+"#"+newHoliday.getHolidayDate(),newHoliday);
+        }
         for(int i=0;i<cuHolidayList.size();i++){
             HolidayEntity cuHoliday = cuHolidayList.get(i);
-            HolidayEntity newAdded = null;
+            HolidayEntity updateHoliday = null;
+            boolean newAdd = false;
             for (int j=0;j<newHolidayList.size();j++) {
                 HolidayEntity newHoliday = newHolidayList.get(j);
                 if(cuHoliday.getHolidayDate().equals(newHoliday.getHolidayDate())
                         && cuHoliday.getHolidayCountry().equals(newHoliday.getHolidayCountry())){
-                    newAdded = newHoliday;
+                    updateHoliday = newHoliday;
+                    newHolidayMap.remove(newHoliday.getHolidayCountry()+"#"+newHoliday.getHolidayDate());
                 }
             }
-            if(newAdded != null) {
-                finalHolidayList.add(newAdded);
+            if(updateHoliday != null) {
+                finalHolidayList.add(updateHoliday);
             }else {
                 finalHolidayList.add(cuHoliday);
             }
         }
+        if(newHolidayMap.keySet().size()>0){
+            for(Map.Entry<String, HolidayEntity> entry: newHolidayMap.entrySet()){
+                finalHolidayList.add(entry.getValue());
+            }
+        }
         logger.info("finalHolidayList  size = [{}]",finalHolidayList.size());
         if(finalHolidayList.size()>0){
+            currentHolidayEntityList.setUpdated(true);
             return writeCSVFile(finalHolidayList);
         }
         return false;
@@ -132,7 +146,7 @@ public class CSVUtils {
         }
         logger.info("removeHoliday: finalHolidayList  size = [{}]",finalHolidayList.size());
         if(finalHolidayList.size()>0){
-            getHolidayEntityList().setHolidayList(finalHolidayList);
+            currentHolidayEntityList.setUpdated(true);
             return writeCSVFile(finalHolidayList);
         }
         return false;
@@ -167,7 +181,6 @@ public class CSVUtils {
             osw.flush();
             out.close();
             osw.close();
-            getHolidayEntityList().setUpdated(true);
         }catch (IOException e) {
             logger.error("write csv file failed, path = [{}]", filePath, e);
             return false;
