@@ -86,10 +86,8 @@ public class CSVUtils {
             HolidayEntity newAdded = null;
             for (int j=0;j<newHolidayList.size();j++) {
                 HolidayEntity newHoliday = newHolidayList.get(j);
-                if(!cuHoliday.getHolidayName().equals(newHoliday.getHolidayName())
-                        || !cuHoliday.getHolidayCountry().equals(newHoliday.getHolidayCountry())
-                        || !cuHoliday.getHolidayDate().equals(newHoliday.getHolidayDate())
-                        || !cuHoliday.getHolidayCountryDesc().equals(newHoliday.getHolidayCountryDesc())){
+                if(cuHoliday.getHolidayDate().equals(newHoliday.getHolidayDate())
+                        && cuHoliday.getHolidayCountry().equals(newHoliday.getHolidayCountry())){
                     newAdded = newHoliday;
                 }
             }
@@ -106,9 +104,9 @@ public class CSVUtils {
         return false;
     }
 
-    public static boolean removeHoliday(ArrayList<HolidayEntity> newHolidayList) {
-        if (newHolidayList == null || newHolidayList.size() == 0) {
-            logger.info("no any update, new holiday list is empty");
+    public static boolean removeHoliday(ArrayList<HolidayEntity> rmHolidayList) {
+        if (rmHolidayList == null || rmHolidayList.size() == 0) {
+            logger.info("no any remove need, remove holiday list is empty");
             return false;
         }
         HolidayEntityList currentHolidayEntityList = getHolidayEntityList();
@@ -121,9 +119,10 @@ public class CSVUtils {
         for (int j=0;j<cuHolidayList.size();j++){
             HolidayEntity cuHoliday = cuHolidayList.get(j);
             boolean remove = false;
-            for(int i=0;i<newHolidayList.size();i++){
-                HolidayEntity newHoliday = newHolidayList.get(i);
-                if(cuHoliday.getHolidayName().equals(newHoliday.getHolidayName())){
+            for(int i=0;i<rmHolidayList.size();i++){
+                HolidayEntity rmHoliday = rmHolidayList.get(i);
+                if(cuHoliday.getHolidayDate().equals(rmHoliday.getHolidayDate())
+                        && cuHoliday.getHolidayCountry().equals(rmHoliday.getHolidayCountry())){
                     remove = true;
                 }
             }
